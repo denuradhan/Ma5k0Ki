@@ -7,8 +7,14 @@ import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 import androidx.navigation.Navigation;
 
+import com.google.android.material.snackbar.Snackbar;
+
+import java.util.ArrayList;
+import java.util.List;
+
 import id.ac.polinema.maskoki.R;
 import id.ac.polinema.maskoki.models.AccountModel;
+import id.ac.polinema.maskoki.models.RecipeModel;
 import id.ac.polinema.maskoki.services.MaskokiAPI;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -19,8 +25,14 @@ import retrofit2.converter.gson.GsonConverterFactory;
 public class MaskokiViewModel extends ViewModel {
     public static final String TAG = "TESTING";
     private MutableLiveData<AccountModel> accountModelMutableLiveData = new MutableLiveData<>();
+    private MutableLiveData<List<RecipeModel>> recipeModelListMutableLiveData =
+            new MutableLiveData<>(new ArrayList<>());
     private Retrofit retrofit;
     private MaskokiAPI service;
+
+    public MutableLiveData<List<RecipeModel>> getRecipeModelListMutableLiveData() {
+        return recipeModelListMutableLiveData;
+    }
 
     public void setAccountModelMutableLiveData(MutableLiveData<AccountModel> accountModelMutableLiveData) {
         this.accountModelMutableLiveData = accountModelMutableLiveData;
@@ -83,6 +95,26 @@ public class MaskokiViewModel extends ViewModel {
 
             @Override
             public void onFailure(Call<AccountModel> call, Throwable t) {
+                Log.i(TAG, "onFailure: Gagal connect ke API");
+            }
+        });
+    }
+
+    public void callRecipe(){
+        Call<List<RecipeModel>> call = service.listRecipes();
+        call.enqueue(new Callback<List<RecipeModel>>() {
+            @Override
+            public void onResponse(Call<List<RecipeModel>> call, Response<List<RecipeModel>> response) {
+                if(response.isSuccessful()){
+                    recipeModelListMutableLiveData.setValue(response.body());
+                    Log.i(TAG, "onResponse: berhasil");
+                }else{
+                    Log.i(TAG, "onResponse: gagal");
+                }
+            }
+
+            @Override
+            public void onFailure(Call<List<RecipeModel>> call, Throwable t) {
                 Log.i(TAG, "onFailure: Gagal connect ke API");
             }
         });
